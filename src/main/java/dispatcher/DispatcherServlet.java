@@ -35,6 +35,9 @@ import utils.StreamUtil;
 @WebServlet(urlPatterns = "/*", loadOnStartup = 0)
 public class DispatcherServlet extends HttpServlet {
 
+	
+	private static final long serialVersionUID = -4541844387836086509L;
+
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		// 初始化相关Helper类

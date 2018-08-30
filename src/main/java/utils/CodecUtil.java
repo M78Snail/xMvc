@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 public final class CodecUtil {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CodecUtil.class);
 
+	@SuppressWarnings("deprecation")
 	public static String encodeURL(String source) {
 		String target;
 		try {
@@ -20,6 +21,7 @@ public final class CodecUtil {
 		return target;
 	}
 
+	@SuppressWarnings("deprecation")
 	public static String decodeURL(String source) {
 		String target;
 		try {
