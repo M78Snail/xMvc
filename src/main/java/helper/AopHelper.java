@@ -12,9 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import annotation.Aop;
+import annotation.Service;
 import proxy.AopProxy;
 import proxy.Proxy;
 import proxy.ProxyManager;
+import proxy.TransactionProxy;
 
 public final class AopHelper {
 
@@ -55,6 +57,12 @@ public final class AopHelper {
 	 */
 	private static Map<Class<?>, Set<Class<?>>> createProxyMap() throws Exception {
 		Map<Class<?>, Set<Class<?>>> proxyMap = new HashMap<Class<?>, Set<Class<?>>>();
+		addAopProxy(proxyMap);
+		addTransactionProxy(proxyMap);
+		return proxyMap;
+	}
+
+	private static void addAopProxy(Map<Class<?>, Set<Class<?>>> proxyMap) throws Exception {
 		Set<Class<?>> proxyClassSet = ClassHelper.getClassSetBySupper(AopProxy.class);
 		for (Class<?> proxyClass : proxyClassSet) {
 			if (proxyClass.isAnnotationPresent(Aop.class)) {
@@ -63,7 +71,11 @@ public final class AopHelper {
 				proxyMap.put(proxyClass, targetClassSet);
 			}
 		}
-		return proxyMap;
+	}
+
+	private static void addTransactionProxy(Map<Class<?>, Set<Class<?>>> proxyMap) {
+		Set<Class<?>> serviceClassSet = ClassHelper.getClassSetBySupper(Service.class);
+		proxyMap.put(TransactionProxy.class, serviceClassSet);
 	}
 
 	private static Map<Class<?>, List<Proxy>> createTargetMap(Map<Class<?>, Set<Class<?>>> proxyMap) throws Exception {
