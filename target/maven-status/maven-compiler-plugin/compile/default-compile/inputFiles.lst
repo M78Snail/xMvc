@@ -12,6 +12,7 @@ E:\Java-jee\xMvc\src\main\java\annotation\Inject.java
 E:\Java-jee\xMvc\src\main\java\helper\ConfigHelper.java
 E:\Java-jee\xMvc\src\main\java\utils\ClassUtil.java
 E:\Java-jee\xMvc\src\main\java\proxy\Proxy.java
+E:\Java-jee\xMvc\src\main\java\utils\FileUtil.java
 E:\Java-jee\xMvc\src\main\java\bean\Request.java
 E:\Java-jee\xMvc\src\main\java\utils\JsonUtil.java
 E:\Java-jee\xMvc\src\main\java\dispatcher\DispatcherServlet.java
@@ -20,9 +21,13 @@ E:\Java-jee\xMvc\src\main\java\utils\CodecUtil.java
 E:\Java-jee\xMvc\src\main\java\helper\AopHelper.java
 E:\Java-jee\xMvc\src\main\java\proxy\ProxyChain.java
 E:\Java-jee\xMvc\src\main\java\bean\Data.java
+E:\Java-jee\xMvc\src\main\java\helper\UploadHelper.java
 E:\Java-jee\xMvc\src\main\java\utils\ReflectionUtil.java
+E:\Java-jee\xMvc\src\main\java\bean\FormParam.java
 E:\Java-jee\xMvc\src\main\java\helper\BeanHelper.java
 E:\Java-jee\xMvc\src\main\java\utils\PropsUtil.java
+E:\Java-jee\xMvc\src\main\java\bean\FileParam.java
+E:\Java-jee\xMvc\src\main\java\helper\RequestHelper.java
 E:\Java-jee\xMvc\src\main\java\proxy\AopProxy.java
 E:\Java-jee\xMvc\src\main\java\helper\DatabaseHelper.java
 E:\Java-jee\xMvc\src\main\java\bean\View.java

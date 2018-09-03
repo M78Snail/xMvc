@@ -20,4 +20,6 @@ public interface ConfigConstant {
 	public String APP_JSP_PATH = "simple.framework.app.jsp_path";
 	public String APP_ASSET_PATH = "simple.framework.app.asset_path";
 
+	public String APP_UPLOAD_LIMIT = "simple.framework.app.upload_limit";
+
 }

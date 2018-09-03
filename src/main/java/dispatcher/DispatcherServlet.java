@@ -3,7 +3,6 @@ package dispatcher;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
-import java.util.Enumeration;
 import java.util.Map;
 
 import javax.servlet.ServletConfig;
@@ -15,8 +14,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.collections4.map.HashedMap;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import bean.Data;
@@ -26,16 +23,15 @@ import bean.View;
 import helper.BeanHelper;
 import helper.ConfigHelper;
 import helper.ControllerHelper;
+import helper.RequestHelper;
+import helper.UploadHelper;
 import loader.HelperLoader;
-import utils.CodecUtil;
 import utils.JsonUtil;
 import utils.ReflectionUtil;
-import utils.StreamUtil;
 
 @WebServlet(urlPatterns = "/*", loadOnStartup = 0)
 public class DispatcherServlet extends HttpServlet {
 
-	
 	private static final long serialVersionUID = -4541844387836086509L;
 
 	@Override
@@ -52,6 +48,7 @@ public class DispatcherServlet extends HttpServlet {
 		// 注册处理静态资源的Servlet
 		ServletRegistration defaultServlet = servletContext.getServletRegistration("default");
 		defaultServlet.addMapping(ConfigHelper.getAppAssetPath() + "*");
+		UploadHelper.init(servletContext);
 	}
 
 	@Override
@@ -62,69 +59,71 @@ public class DispatcherServlet extends HttpServlet {
 
 		// 获取Action处理器
 		Handler handler = ControllerHelper.getHandler(requestMethod, requestPath);
+
 		if (handler != null) {
 			Class<?> controllerClass = handler.getControllerClass();
 			System.out.println("找到Handler>>>" + controllerClass.getSimpleName());
 			Object controllerBean = BeanHelper.getBean(controllerClass);
-			// 创建请求参数
-			Map<String, Object> paramMap = new HashedMap<String, Object>();
-			Enumeration<String> paramNames = req.getParameterNames();
-			while (paramNames.hasMoreElements()) {
-				String paramName = paramNames.nextElement();
-				String paramValue = req.getParameter(paramName);
-				paramMap.put(paramName, paramValue);
-			}
-			String body = CodecUtil.decodeURL(StreamUtil.getString(req.getInputStream()));
-			if (StringUtils.isNotEmpty(body)) {
-				String[] params = StringUtils.split(body, "&");
-				if (ArrayUtils.isNotEmpty(params)) {
-					for (String param : params) {
-						String[] array = StringUtils.split(param, "=");
-						if (ArrayUtils.isNotEmpty(array) && array.length == 2) {
-							String paramName = array[0];
-							String paramValue = array[1];
-							paramMap.put(paramName, paramValue);
-						}
-					}
-				}
+
+			Param param = null;
+
+			if (UploadHelper.isMultipart(req)) {
+				param = UploadHelper.createParam(req);
+			} else {
+				param = RequestHelper.createParam(req);
 			}
 
-			Param param = new Param(paramMap);
+			Object result;
+
 			// 反射 调用Action方法
 			Method actionMethod = handler.getActionMethod();
 
-			Object result = ReflectionUtil.invokeMethod(controllerBean, actionMethod, param);
+			if (param.isEmpty()) {
+				result = ReflectionUtil.invokeMethod(controllerBean, actionMethod);
+			} else {
+				result = ReflectionUtil.invokeMethod(controllerBean, actionMethod, param);
+			}
 
 			// 处理Action返回
 			if (result instanceof View) {
 				View view = (View) result;
-				String path = view.getPath();
-				if (StringUtils.isNotEmpty(path)) {
-					if (path.startsWith("/")) {
-						resp.sendRedirect(req.getContextPath() + path);
-					} else {
-						Map<String, Object> model = view.getModel();
-						for (Map.Entry<String, Object> entry : model.entrySet()) {
-							req.setAttribute(entry.getKey(), entry.getValue());
-						}
-						req.getRequestDispatcher(ConfigHelper.getAppJspPath() + path).forward(req, resp);
-					}
-				}
+				handleViewResult(view, req, resp);
 			} else if (result instanceof Data) {
 				Data data = (Data) result;
-				Object model = data.getModel();
-				if (model != null) {
-					resp.setContentType("application/json");
-					resp.setCharacterEncoding("UTF-8");
-					PrintWriter writer = resp.getWriter();
-					String json = JsonUtil.toJson(model);
-					writer.write(json);
-					writer.flush();
-					writer.close();
-				}
+				handleDataResult(data, resp);
 			}
 		} else {
 			System.out.println("未找到Handler");
+		}
+	}
+
+	private void handleViewResult(View view, HttpServletRequest request, HttpServletResponse response)
+			throws IOException, ServletException {
+
+		String path = view.getPath();
+		if (StringUtils.isNotEmpty(path)) {
+			if (path.startsWith("/")) {
+				response.sendRedirect(request.getContextPath() + path);
+			} else {
+				Map<String, Object> model = view.getModel();
+				for (Map.Entry<String, Object> entry : model.entrySet()) {
+					request.setAttribute(entry.getKey(), entry.getValue());
+				}
+				request.getRequestDispatcher(ConfigHelper.getAppJspPath() + path).forward(request, response);
+			}
+		}
+	}
+
+	private void handleDataResult(Data data, HttpServletResponse response) throws IOException {
+		Object model = data.getModel();
+		if (model != null) {
+			response.setContentType("application/json");
+			response.setCharacterEncoding("UTF-8");
+			PrintWriter writer = response.getWriter();
+			String json = JsonUtil.toJson(model);
+			writer.write(json);
+			writer.flush();
+			writer.close();
 		}
 	}
 
