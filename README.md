@@ -1,6 +1,4 @@
-# xMvc
-# 一款简单的Mvc框架
-
+# xMvc：一款简单，实用的Mvc框架
 # 配置：
 
 1. 在resources目录下，创建simple.properties (名称不可变)
